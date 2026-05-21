@@ -1,17 +1,26 @@
 import type { Digest } from '../agent/schema.js';
+import type { DigestCompletion } from '../agent/summarize.js';
 import type { FeedbackStats } from '../feedback/stats.js';
 
 const MAX_MARKDOWN_QUOTE_LENGTH = 280;
 
-export function renderMarkdown(digest: Digest, stats?: FeedbackStats): string {
+export function renderMarkdown(digest: Digest, stats?: FeedbackStats, completion: DigestCompletion = { status: 'complete' }): string {
   const lines: string[] = [];
   lines.push(`# Feedback Digest`);
   lines.push('');
+  if (completion.status === 'incomplete') {
+    lines.push('> ⚠️ **Incomplete digest:** some non-empty Feedback Signals failed synthesis after retries. Do not treat this as complete coverage.');
+    lines.push('');
+  }
   lines.push(`**Period:** ${digest.period.start} → ${digest.period.end}`);
   lines.push('');
   const totals = stats?.sourceCounts ?? digest.totals;
   lines.push(`**Totals:** case closure ${totals.caseClosure}, general ${totals.general}, targeted ${totals.targeted}`);
   if (stats) lines.push(`**Input rows:** ${stats.total}; non-empty text: ${stats.nonEmpty}; empty text: ${stats.empty}`);
+  if (completion.status === 'incomplete') {
+    lines.push(`**Unsynthesized non-empty signals:** ${completion.unsynthesizedSignalCount}`);
+    lines.push(`**Failed chunks:** ${completion.failedChunks.map((chunk) => `#${chunk.index} (${chunk.itemCount} signals)`).join(', ')}`);
+  }
   lines.push('');
   lines.push('## Executive summary');
   lines.push('');

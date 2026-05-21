@@ -30,4 +30,16 @@ describe('renderMarkdown', () => {
     expect(md).toContain('**a:** “The closure reason was vague.”');
     expect(md).toContain('**Input rows:** 3; non-empty text: 2; empty text: 1');
   });
+
+  it('visibly marks incomplete digests', () => {
+    const md = renderMarkdown(digest, undefined, {
+      status: 'incomplete',
+      unsynthesizedSignalCount: 2,
+      failedChunks: [{ index: 1, itemCount: 2, itemIds: ['x', 'y'], error: 'provider down' }],
+    });
+
+    expect(md).toContain('⚠️ **Incomplete digest:**');
+    expect(md).toContain('**Unsynthesized non-empty signals:** 2');
+    expect(md).toContain('**Failed chunks:** #1 (2 signals)');
+  });
 });

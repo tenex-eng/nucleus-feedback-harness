@@ -39,10 +39,10 @@ program
     const providerName = parseProvider(opts.provider) ?? config.llmProvider;
     const model = opts.model ?? (providerName === 'openai' ? config.openaiModel : config.vertexModel);
     const provider = createJsonLlmProvider(config, { provider: providerName, model });
-    const { digest, chunkCoverage } = await summarizeFeedback(provider, { start, end, items });
-    const artifact = buildDigestArtifact({ digest, stats, provider: providerName, model, chunkCoverage });
+    const { digest, chunkCoverage, completion } = await summarizeFeedback(provider, { start, end, items });
+    const artifact = buildDigestArtifact({ digest, stats, provider: providerName, model, chunkCoverage, completion });
     if (opts.saveJson) await writeJson(opts.saveJson, artifact);
-    const markdown = renderMarkdown(digest, stats);
+    const markdown = renderMarkdown(digest, stats, completion);
     const path = await writeDigest(markdown, { outputDir: config.outputDir, out: opts.out, end });
     console.log(`Wrote ${path}`);
   });

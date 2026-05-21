@@ -7,9 +7,21 @@ import { DigestSchema, type Digest } from './schema.js';
 
 export const DEFAULT_SYNTHESIS_CHUNK_SIZE = 200;
 
+export type FailedChunk = {
+  index: number;
+  itemCount: number;
+  itemIds: string[];
+  error: string;
+};
+
+export type DigestCompletion =
+  | { status: 'complete' }
+  | { status: 'incomplete'; unsynthesizedSignalCount: number; failedChunks: FailedChunk[] };
+
 export type SummarizeFeedbackResult = {
   digest: Digest;
   chunkCoverage: ChunkCoverage;
+  completion: DigestCompletion;
 };
 
 export async function summarizeFeedback(provider: JsonLlmProvider, input: { start: Date; end: Date; items: FeedbackItem[]; chunkSize?: number }): Promise<SummarizeFeedbackResult> {
@@ -19,18 +31,31 @@ export async function summarizeFeedback(provider: JsonLlmProvider, input: { star
 
   if (chunks.length === 0) {
     const digest = await digestChunk(provider, input.start, input.end, [], 0, 0);
-    return { digest, chunkCoverage };
+    return { digest, chunkCoverage, completion: { status: 'complete' } };
   }
 
   const chunkDigests = [];
+  const failedChunks: FailedChunk[] = [];
   for (const chunk of chunks) {
-    chunkDigests.push(await digestChunk(provider, input.start, input.end, chunk.items, chunk.index, chunks.length));
+    try {
+      chunkDigests.push(await digestChunk(provider, input.start, input.end, chunk.items, chunk.index, chunks.length));
+    } catch (error) {
+      failedChunks.push({
+        index: chunk.index,
+        itemCount: chunk.items.length,
+        itemIds: chunk.itemIds,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
-  if (chunkDigests.length === 1) return { digest: chunkDigests[0], chunkCoverage };
-
-  const digest = mergeChunkDigests({ start: input.start, end: input.end, digests: chunkDigests });
-  return { digest, chunkCoverage };
+  const digest = chunkDigests.length === 1
+    ? chunkDigests[0]
+    : mergeChunkDigests({ start: input.start, end: input.end, digests: chunkDigests });
+  const completion: DigestCompletion = failedChunks.length === 0
+    ? { status: 'complete' }
+    : { status: 'incomplete', unsynthesizedSignalCount: failedChunks.reduce((total, chunk) => total + chunk.itemCount, 0), failedChunks };
+  return { digest, chunkCoverage, completion };
 }
 
 async function digestChunk(provider: JsonLlmProvider, start: Date, end: Date, items: FeedbackItem[], chunkIndex: number, chunkCount: number): Promise<Digest> {

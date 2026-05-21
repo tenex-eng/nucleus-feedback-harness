@@ -31,6 +31,7 @@ describe('buildDigestArtifact', () => {
       schemaVersion: DIGEST_ARTIFACT_SCHEMA_VERSION,
       promptVersion: expect.any(String),
       coverageStats: stats,
+      completion: { status: 'complete' },
       digest,
     });
   });
@@ -51,5 +52,21 @@ describe('buildDigestArtifact', () => {
       model: 'gpt-4.1-mini',
       chunkCoverage,
     }).chunkCoverage).toEqual(chunkCoverage);
+  });
+
+  it('preserves incomplete completion metadata', () => {
+    const completion = {
+      status: 'incomplete' as const,
+      unsynthesizedSignalCount: 2,
+      failedChunks: [{ index: 1, itemCount: 2, itemIds: ['x', 'y'], error: 'provider down' }],
+    };
+
+    expect(buildDigestArtifact({
+      digest,
+      stats,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      completion,
+    }).completion).toEqual(completion);
   });
 });
