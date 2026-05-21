@@ -1,5 +1,6 @@
 import type { Digest } from '../agent/schema.js';
 import { PROMPT_VERSION } from '../agent/prompt.js';
+import type { ChunkCoverage } from '../feedback/chunks.js';
 import type { FeedbackStats } from '../feedback/stats.js';
 import type { LlmProviderName } from '../llm/types.js';
 
@@ -13,6 +14,7 @@ export type DigestArtifact = {
   promptVersion: string;
   schemaVersion: string;
   coverageStats: FeedbackStats;
+  chunkCoverage?: ChunkCoverage;
   digest: Digest;
 };
 
@@ -22,6 +24,7 @@ export function buildDigestArtifact(input: {
   provider: LlmProviderName;
   model: string;
   generatedAt?: Date;
+  chunkCoverage?: ChunkCoverage;
 }): DigestArtifact {
   return {
     period: input.digest.period,
@@ -31,6 +34,7 @@ export function buildDigestArtifact(input: {
     promptVersion: PROMPT_VERSION,
     schemaVersion: DIGEST_ARTIFACT_SCHEMA_VERSION,
     coverageStats: input.stats,
+    chunkCoverage: input.chunkCoverage,
     digest: input.digest,
   };
 }

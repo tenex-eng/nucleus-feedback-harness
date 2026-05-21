@@ -35,4 +35,22 @@ describe('buildDigestArtifact', () => {
       digest,
     });
   });
+
+  it('includes chunk coverage when provided', () => {
+    const chunkCoverage = {
+      chunkSize: 2,
+      chunkCount: 1,
+      nonEmptyCount: 2,
+      emptyExcludedCount: 1,
+      chunks: [{ index: 0, itemCount: 2, itemIds: ['a', 'b'] }],
+    };
+
+    expect(buildDigestArtifact({
+      digest,
+      stats,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      chunkCoverage,
+    }).chunkCoverage).toEqual(chunkCoverage);
+  });
 });

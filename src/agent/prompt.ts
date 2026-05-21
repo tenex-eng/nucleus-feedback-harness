@@ -3,11 +3,10 @@ import type { FeedbackItem } from '../feedback/types.js';
 
 export const PROMPT_VERSION = '1.0.0';
 
-export function buildDigestPrompt(input: { start: Date; end: Date; items: FeedbackItem[]; maxItems?: number }): string {
-  const maxItems = input.maxItems ?? 200;
+export function buildDigestPrompt(input: { start: Date; end: Date; items: FeedbackItem[]; chunkIndex?: number; chunkCount?: number }): string {
   const stats = computeFeedbackStats(input.items);
-  const nonEmptyItems = input.items.filter((item) => item.text.trim().length > 0);
-  const items = nonEmptyItems.slice(0, maxItems).map(compactItem);
+  const items = input.items.filter((item) => item.text.trim().length > 0).map(compactItem);
+  const chunkLine = input.chunkIndex == null || input.chunkCount == null ? '' : `Chunk: ${input.chunkIndex + 1} of ${input.chunkCount}\n`;
   return `Summarize Nucleus customer feedback into strict JSON only. No markdown. No prose outside JSON.
 
 Rules:
@@ -35,7 +34,7 @@ Period: ${input.start.toISOString()} to ${input.end.toISOString()}
 Queried rows: ${stats.total}
 Non-empty text rows: ${stats.nonEmpty}
 Empty text rows excluded from prompt: ${stats.empty}
-Prompt sample: ${items.length} most recent non-empty rows
+${chunkLine}Prompt rows: ${items.length} non-empty rows
 Feedback JSON:
 ${JSON.stringify(items, null, 2)}`;
 }
