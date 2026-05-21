@@ -7,9 +7,9 @@ export function renderMarkdown(digest: Digest, stats?: FeedbackStats): string {
   lines.push('');
   lines.push(`**Period:** ${digest.period.start} → ${digest.period.end}`);
   lines.push('');
-  const totals = stats?.counts ?? digest.totals;
+  const totals = stats?.sourceCounts ?? digest.totals;
   lines.push(`**Totals:** case closure ${totals.caseClosure}, general ${totals.general}, targeted ${totals.targeted}`);
-  if (stats) lines.push(`**Input rows:** ${stats.total}; empty text: ${stats.emptyText}`);
+  if (stats) lines.push(`**Input rows:** ${stats.total}; non-empty text: ${stats.nonEmpty}; empty text: ${stats.empty}`);
   lines.push('');
   lines.push('## Executive summary');
   lines.push('');

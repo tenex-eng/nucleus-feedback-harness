@@ -6,6 +6,7 @@ import { summarizeFeedback } from './agent/summarize.js';
 import { computeFeedbackStats } from './feedback/stats.js';
 import { createJsonLlmProvider, parseProvider } from './llm/factory.js';
 import { renderMarkdown } from './output/markdown.js';
+import { buildDigestArtifact } from './output/artifact.js';
 import { writeJson } from './output/json.js';
 import { writeDigest } from './output/write.js';
 
@@ -35,9 +36,12 @@ program
       return;
     }
 
-    const provider = createJsonLlmProvider(config, { provider: parseProvider(opts.provider), model: opts.model });
+    const providerName = parseProvider(opts.provider) ?? config.llmProvider;
+    const model = opts.model ?? (providerName === 'openai' ? config.openaiModel : config.vertexModel);
+    const provider = createJsonLlmProvider(config, { provider: providerName, model });
     const digest = await summarizeFeedback(provider, { start, end, items });
-    if (opts.saveJson) await writeJson(opts.saveJson, { digest, stats });
+    const artifact = buildDigestArtifact({ digest, stats, provider: providerName, model });
+    if (opts.saveJson) await writeJson(opts.saveJson, artifact);
     const markdown = renderMarkdown(digest, stats);
     const path = await writeDigest(markdown, { outputDir: config.outputDir, out: opts.out, end });
     console.log(`Wrote ${path}`);

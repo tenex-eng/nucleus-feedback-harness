@@ -1,6 +1,8 @@
 import { computeFeedbackStats } from '../feedback/stats.js';
 import type { FeedbackItem } from '../feedback/types.js';
 
+export const PROMPT_VERSION = '1.0.0';
+
 export function buildDigestPrompt(input: { start: Date; end: Date; items: FeedbackItem[]; maxItems?: number }): string {
   const maxItems = input.maxItems ?? 200;
   const stats = computeFeedbackStats(input.items);
@@ -31,8 +33,8 @@ JSON shape:
 
 Period: ${input.start.toISOString()} to ${input.end.toISOString()}
 Queried rows: ${stats.total}
-Non-empty text rows: ${stats.total - stats.emptyText}
-Empty text rows excluded from prompt: ${stats.emptyText}
+Non-empty text rows: ${stats.nonEmpty}
+Empty text rows excluded from prompt: ${stats.empty}
 Prompt sample: ${items.length} most recent non-empty rows
 Feedback JSON:
 ${JSON.stringify(items, null, 2)}`;

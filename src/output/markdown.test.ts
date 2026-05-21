@@ -11,9 +11,9 @@ const digest = {
 
 describe('renderMarkdown', () => {
   it('uses computed stats when provided', () => {
-    const md = renderMarkdown(digest, { total: 3, emptyText: 1, counts: { caseClosure: 1, general: 1, targeted: 1 } });
+    const md = renderMarkdown(digest, { total: 3, nonEmpty: 2, empty: 1, sourceCounts: { caseClosure: 1, general: 1, targeted: 1 } });
     expect(md).toContain('case closure 1, general 1, targeted 1');
-    expect(md).toContain('**Input rows:** 3; empty text: 1');
+    expect(md).toContain('**Input rows:** 3; non-empty text: 2; empty text: 1');
     expect(md).toContain('### Theme');
   });
 });
