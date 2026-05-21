@@ -5,8 +5,7 @@ const digest = {
   period: { start: '2026-05-01T00:00:00.000Z', end: '2026-05-08T00:00:00.000Z' },
   totals: { caseClosure: 99, general: 99, targeted: 99 },
   executiveSummary: 'summary',
-  themes: [],
-  notableFeedback: [],
+  researchFindings: [],
 };
 
 const stats = {

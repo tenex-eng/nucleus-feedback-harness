@@ -1,7 +1,7 @@
 import { computeFeedbackStats } from '../feedback/stats.js';
 import type { FeedbackItem } from '../feedback/types.js';
 
-export const PROMPT_VERSION = '1.0.0';
+export const PROMPT_VERSION = '2.0.0';
 
 export function buildDigestPrompt(input: { start: Date; end: Date; items: FeedbackItem[]; chunkIndex?: number; chunkCount?: number }): string {
   const stats = computeFeedbackStats(input.items);
@@ -11,23 +11,34 @@ export function buildDigestPrompt(input: { start: Date; end: Date; items: Feedba
 
 Rules:
 - Use only provided feedback.
-- Cluster repeated issues into 3-6 actionable themes.
-- Prefer actionable product/AI quality themes over generic positive feedback.
-- Include at most one positive theme, only if strongly recurring.
-- Evidence IDs must be representative IDs from input, max 5 per theme.
-- Theme count = count of provided prompt items supporting the theme, not the full database population.
-- Prefer concrete recommended actions.
-- If little data, say so in executiveSummary and keep arrays short.
+- Produce 3-6 evidence-backed Research Findings, not generic themes.
+- Each finding must name affected workflow and user pain/need.
+- Severity = impact/urgency: "low" | "medium" | "high".
+- Confidence = evidence strength: "low" | "medium" | "high".
+- Source diversity counts supporting evidence by source.
+- Evidence IDs must be representative IDs from input, max 5 per finding.
+- Representative quotes must be direct quotes, max 280 chars each, max 3 per finding.
+- Recommended next step must be concrete.
+- Include open questions when confidence is low/medium or evidence is ambiguous.
 - Empty-text rows were excluded from Feedback JSON. Do not infer satisfaction, intent, or sentiment from empty text.
-- Notable feedback quotes must be <= 400 chars.
 
 JSON shape:
 {
   "period": { "start": string, "end": string },
   "totals": { "caseClosure": number, "general": number, "targeted": number },
   "executiveSummary": string,
-  "themes": [{ "title": string, "category": "bug"|"ux"|"ai_quality"|"feature"|"case_quality"|"other", "severity": "low"|"medium"|"high", "count": number, "evidenceIds": string[], "summary": string, "recommendedAction": string }],
-  "notableFeedback": [{ "id": string, "source": "case_closure"|"general"|"targeted", "quote": string, "whyItMatters": string }]
+  "researchFindings": [{
+    "title": string,
+    "affectedWorkflow": string,
+    "painOrNeed": string,
+    "severity": "low"|"medium"|"high",
+    "confidence": "low"|"medium"|"high",
+    "sourceDiversity": { "caseClosure": number, "general": number, "targeted": number },
+    "evidenceIds": string[],
+    "representativeQuotes": [{ "id": string, "quote": string }],
+    "recommendedNextStep": string,
+    "openQuestions": string[]
+  }]
 }
 
 Period: ${input.start.toISOString()} to ${input.end.toISOString()}

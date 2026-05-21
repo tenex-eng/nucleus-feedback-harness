@@ -43,10 +43,10 @@ async function synthesizeChunkDigests(provider: JsonLlmProvider, start: Date, en
 Rules:
 - Preserve period exactly.
 - Totals must be the sum of chunk totals.
-- Merge duplicate themes across chunks.
-- Evidence IDs must come from chunk digests.
-- Keep 3-6 most actionable themes.
-- Notable feedback should be the strongest examples across chunks.
+- Merge duplicate Research Findings across chunks.
+- Evidence IDs and representative quotes must come from chunk digests.
+- Keep 3-6 most actionable Research Findings.
+- Preserve open questions for weak or ambiguous evidence.
 
 JSON shape matches the chunk digests.
 Period: ${start.toISOString()} to ${end.toISOString()}

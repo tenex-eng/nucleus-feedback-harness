@@ -8,8 +8,7 @@ const digest = (suffix: string): Digest => ({
   period: { start: '2026-01-01T00:00:00.000Z', end: '2026-01-08T00:00:00.000Z' },
   totals: { caseClosure: 0, general: 1, targeted: 0 },
   executiveSummary: `summary ${suffix}`,
-  themes: [],
-  notableFeedback: [],
+  researchFindings: [],
 });
 
 const item = (id: string, text = 'text'): FeedbackItem => ({ id, createdAt: `2026-01-0${id}T00:00:00.000Z`, source: 'general', text });

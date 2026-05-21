@@ -1,6 +1,8 @@
 import type { Digest } from '../agent/schema.js';
 import type { FeedbackStats } from '../feedback/stats.js';
 
+const MAX_MARKDOWN_QUOTE_LENGTH = 280;
+
 export function renderMarkdown(digest: Digest, stats?: FeedbackStats): string {
   const lines: string[] = [];
   lines.push(`# Feedback Digest`);
@@ -15,26 +17,31 @@ export function renderMarkdown(digest: Digest, stats?: FeedbackStats): string {
   lines.push('');
   lines.push(digest.executiveSummary);
   lines.push('');
-  lines.push('## Themes');
+  lines.push('## Research Findings');
   lines.push('');
-  if (digest.themes.length === 0) lines.push('_No themes._');
-  for (const theme of digest.themes) {
-    lines.push(`### ${theme.title}`);
+  if (digest.researchFindings.length === 0) lines.push('_No research findings._');
+  for (const finding of digest.researchFindings) {
+    lines.push(`### ${finding.title}`);
     lines.push('');
-    lines.push(`- **Category:** ${theme.category}`);
-    lines.push(`- **Severity:** ${theme.severity}`);
-    lines.push(`- **Count:** ${theme.count}`);
-    lines.push(`- **Evidence:** ${theme.evidenceIds.join(', ') || 'none'}`);
-    lines.push(`- **Summary:** ${theme.summary}`);
-    lines.push(`- **Recommended action:** ${theme.recommendedAction}`);
+    lines.push(`- **Affected workflow:** ${finding.affectedWorkflow}`);
+    lines.push(`- **Pain / need:** ${finding.painOrNeed}`);
+    lines.push(`- **Severity:** ${finding.severity}`);
+    lines.push(`- **Confidence:** ${finding.confidence}`);
+    lines.push(`- **Source diversity:** case closure ${finding.sourceDiversity.caseClosure}, general ${finding.sourceDiversity.general}, targeted ${finding.sourceDiversity.targeted}`);
+    lines.push(`- **Evidence:** ${finding.evidenceIds.join(', ') || 'none'}`);
+    lines.push(`- **Recommended next step:** ${finding.recommendedNextStep}`);
+    if (finding.openQuestions.length > 0) lines.push(`- **Open questions:** ${finding.openQuestions.join('; ')}`);
+    lines.push('');
+    lines.push('Representative quotes:');
+    if (finding.representativeQuotes.length === 0) lines.push('- _None._');
+    for (const quote of finding.representativeQuotes) {
+      lines.push(`- **${quote.id}:** “${truncate(quote.quote, MAX_MARKDOWN_QUOTE_LENGTH)}”`);
+    }
     lines.push('');
   }
-  lines.push('## Notable feedback');
-  lines.push('');
-  if (digest.notableFeedback.length === 0) lines.push('_No notable feedback._');
-  for (const item of digest.notableFeedback) {
-    lines.push(`- **${item.id}** (${item.source}): “${item.quote}” — ${item.whyItMatters}`);
-  }
-  lines.push('');
   return lines.join('\n');
+}
+
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
 }
