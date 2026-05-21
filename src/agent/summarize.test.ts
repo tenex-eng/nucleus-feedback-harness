@@ -16,7 +16,7 @@ const item = (id: string, text = 'text'): FeedbackItem => ({ id, createdAt: `202
 describe('summarizeFeedback', () => {
   it('calls synthesis once per non-empty chunk with no sampling cap', async () => {
     const prompts: string[] = [];
-    const responses = [digest('1'), digest('2'), digest('3'), digest('merged')];
+    const responses = [digest('1'), digest('2'), digest('3')];
     const provider: JsonLlmProvider = {
       async generateJson(input) {
         prompts.push(input.prompt);
@@ -34,11 +34,11 @@ describe('summarizeFeedback', () => {
     expect(result.chunkCoverage.nonEmptyCount).toBe(3);
     expect(result.chunkCoverage.emptyExcludedCount).toBe(1);
     expect(result.chunkCoverage.chunks.flatMap((chunk) => chunk.itemIds)).toEqual(['1', '2', '3']);
-    expect(prompts).toHaveLength(4);
+    expect(prompts).toHaveLength(3);
     expect(prompts[0]).toContain('"id": "1"');
     expect(prompts[1]).toContain('"id": "2"');
     expect(prompts[2]).toContain('"id": "3"');
     expect(prompts.join('\n')).not.toContain('"id": "4"');
-    expect(result.digest.executiveSummary).toBe('summary merged');
+    expect(result.digest.executiveSummary).toBe('summary 1\n\nsummary 2\n\nsummary 3');
   });
 });

@@ -1,6 +1,7 @@
 import { partitionNonEmptyFeedback, type ChunkCoverage, buildChunkCoverage } from '../feedback/chunks.js';
 import type { FeedbackItem } from '../feedback/types.js';
 import type { JsonLlmProvider } from '../llm/types.js';
+import { mergeChunkDigests } from './merge.js';
 import { buildDigestPrompt } from './prompt.js';
 import { DigestSchema, type Digest } from './schema.js';
 
@@ -28,30 +29,12 @@ export async function summarizeFeedback(provider: JsonLlmProvider, input: { star
 
   if (chunkDigests.length === 1) return { digest: chunkDigests[0], chunkCoverage };
 
-  const digest = await synthesizeChunkDigests(provider, input.start, input.end, chunkDigests);
+  const digest = mergeChunkDigests({ start: input.start, end: input.end, digests: chunkDigests });
   return { digest, chunkCoverage };
 }
 
 async function digestChunk(provider: JsonLlmProvider, start: Date, end: Date, items: FeedbackItem[], chunkIndex: number, chunkCount: number): Promise<Digest> {
   const prompt = buildDigestPrompt({ start, end, items, chunkIndex, chunkCount });
-  return callAndParse(provider, prompt, false).catch(() => callAndParse(provider, prompt, true));
-}
-
-async function synthesizeChunkDigests(provider: JsonLlmProvider, start: Date, end: Date, digests: Digest[]): Promise<Digest> {
-  const prompt = `Synthesize these chunk-level feedback digests into one strict JSON digest. No markdown. No prose outside JSON.
-
-Rules:
-- Preserve period exactly.
-- Totals must be the sum of chunk totals.
-- Merge duplicate Research Findings across chunks.
-- Evidence IDs and representative quotes must come from chunk digests.
-- Keep 3-6 most actionable Research Findings.
-- Preserve open questions for weak or ambiguous evidence.
-
-JSON shape matches the chunk digests.
-Period: ${start.toISOString()} to ${end.toISOString()}
-Chunk digests JSON:
-${JSON.stringify(digests, null, 2)}`;
   return callAndParse(provider, prompt, false).catch(() => callAndParse(provider, prompt, true));
 }
 
