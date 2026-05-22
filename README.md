@@ -20,10 +20,24 @@ gcloud auth application-default login
 
 ```sh
 pnpm digest --window 7d
-pnpm digest --window 24h --out ./digests/today.md
+pnpm digest --window 24h
 pnpm digest --start 2026-05-01 --end 2026-05-20
 pnpm digest --window 7d --limit 100 --dry-run
-pnpm digest --provider openai --model gpt-4.1-mini --out ./digests/openai.md
-pnpm digest --provider vertex --model gemini-2.5-flash --out ./digests/gemini.md
+pnpm digest --provider openai --model gpt-4.1-mini
+pnpm digest --provider vertex --model gemini-2.5-flash
 pnpm digest --provider vertex --save-json ./digests/gemini.json --out ./digests/gemini.md
+```
+
+By default each run writes dated Markdown and JSON outputs:
+
+```txt
+digests/2026-05-21-feedback-digest.md
+digests/2026-05-21-feedback-digest.json
+```
+
+Incomplete runs are visibly marked in both filenames:
+
+```txt
+digests/2026-05-21-feedback-digest.incomplete.md
+digests/2026-05-21-feedback-digest.incomplete.json
 ```

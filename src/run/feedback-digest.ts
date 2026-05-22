@@ -10,7 +10,7 @@ export type FeedbackDigestPeriod = { start: Date; end: Date };
 export type { FeedbackSignalSource } from '../feedback/intake.js';
 
 export interface ArtifactStore {
-  write(input: { artifact: DigestArtifact; markdown: string; end: Date; markdownPath?: string; jsonPath?: string }): Promise<{ markdownPath: string; jsonPath?: string }>;
+  write(input: { artifact: DigestArtifact; markdown: string; end: Date; markdownPath?: string; jsonPath?: string }): Promise<{ markdownPath: string; jsonPath: string }>;
 }
 
 export type RunFeedbackDigestInput = {
@@ -29,7 +29,7 @@ export type RunFeedbackDigestResult = {
   artifact: DigestArtifact;
   markdown: string;
   completion: DigestCompletion;
-  writtenPaths?: { markdownPath: string; jsonPath?: string };
+  writtenPaths?: { markdownPath: string; jsonPath: string };
 };
 
 export async function runFeedbackDigest(input: RunFeedbackDigestInput): Promise<RunFeedbackDigestResult> {

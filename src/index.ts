@@ -14,7 +14,7 @@ program
   .option('--start <date>', 'start date/time')
   .option('--end <date>', 'end date/time')
   .option('--out <path>', 'markdown output path')
-  .option('--save-json <path>', 'write raw digest JSON')
+  .option('--save-json <path>', 'JSON output path (defaults to dated path next to Markdown)')
   .option('--provider <name>', 'LLM provider: openai or vertex')
   .option('--model <name>', 'LLM model override')
   .option('--limit <number>', 'limit rows per source table', parseInt)
@@ -46,6 +46,7 @@ program
       artifactStore: createFileArtifactStore(config.outputDir),
     });
     console.log(`Wrote ${result.writtenPaths?.markdownPath}`);
+    console.log(`Wrote ${result.writtenPaths?.jsonPath}`);
   });
 
 program.parseAsync().catch((error) => {
