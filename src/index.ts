@@ -1,11 +1,10 @@
 import { Command } from 'commander';
 import { loadConfig } from './config.js';
 import { createBigQueryClient } from './bq/client.js';
-import { fetchFeedback } from './bq/queries.js';
-import { computeFeedbackStats } from './feedback/stats.js';
+import { collectFeedbackSignals, createBigQueryFeedbackSignalSource } from './feedback/intake.js';
 import { createJsonLlmProvider, parseProvider } from './llm/factory.js';
 import { createFileArtifactStore } from './output/store.js';
-import { runFeedbackDigest, type FeedbackSignalSource } from './run/feedback-digest.js';
+import { runFeedbackDigest } from './run/feedback-digest.js';
 
 const program = new Command();
 
@@ -24,13 +23,10 @@ program
     const config = loadConfig();
     const { start, end } = parsePeriod(opts);
     const client = createBigQueryClient(config);
-    const signalSource: FeedbackSignalSource = {
-      fetch: async ({ period, limit }) => fetchFeedback(client, { dataset: config.bqDataset, start: period.start, end: period.end, limit }),
-    };
+    const signalSource = createBigQueryFeedbackSignalSource(client, { dataset: config.bqDataset });
 
     if (opts.dryRun) {
-      const items = await signalSource.fetch({ period: { start, end }, limit: opts.limit });
-      const stats = computeFeedbackStats(items);
+      const { stats } = await collectFeedbackSignals(signalSource, { period: { start, end }, limit: opts.limit });
       console.log(JSON.stringify({ period: { start, end }, ...stats }, null, 2));
       return;
     }

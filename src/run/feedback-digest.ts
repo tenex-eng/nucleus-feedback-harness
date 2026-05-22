@@ -2,15 +2,12 @@ import type { DigestCompletion } from '../agent/synthesis.js';
 import { synthesizeFeedbackDigest } from '../agent/synthesis.js';
 import type { DigestArtifact } from '../output/artifact.js';
 import { createDigestArtifactView } from '../output/artifact.js';
-import { computeFeedbackStats } from '../feedback/stats.js';
-import type { FeedbackItem } from '../feedback/types.js';
+import { collectFeedbackSignals, type FeedbackSignalSource } from '../feedback/intake.js';
 import type { JsonLlmProvider, LlmProviderName } from '../llm/types.js';
 
 export type FeedbackDigestPeriod = { start: Date; end: Date };
 
-export interface FeedbackSignalSource {
-  fetch(input: { period: FeedbackDigestPeriod; limit?: number }): Promise<FeedbackItem[]>;
-}
+export type { FeedbackSignalSource } from '../feedback/intake.js';
 
 export interface ArtifactStore {
   write(input: { artifact: DigestArtifact; markdown: string; end: Date; markdownPath?: string; jsonPath?: string }): Promise<{ markdownPath: string; jsonPath?: string }>;
@@ -36,8 +33,7 @@ export type RunFeedbackDigestResult = {
 };
 
 export async function runFeedbackDigest(input: RunFeedbackDigestInput): Promise<RunFeedbackDigestResult> {
-  const items = await input.signalSource.fetch({ period: input.period, limit: input.limit });
-  const stats = computeFeedbackStats(items);
+  const { items, stats } = await collectFeedbackSignals(input.signalSource, { period: input.period, limit: input.limit });
   const { digest, chunkCoverage, completion } = await synthesizeFeedbackDigest(input.llmProvider, {
     period: input.period,
     items,
