@@ -5,6 +5,7 @@ import { collectFeedbackSignals, createBigQueryFeedbackSignalSource } from './fe
 import { createJsonLlmProvider, parseProvider } from './llm/factory.js';
 import { createFileArtifactStore } from './output/store.js';
 import { runFeedbackDigest } from './run/feedback-digest.js';
+import { formatCliError } from './cli/errors.js';
 
 const program = new Command();
 
@@ -50,7 +51,7 @@ program
   });
 
 program.parseAsync().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error(formatCliError(error));
   process.exitCode = 1;
 });
 
