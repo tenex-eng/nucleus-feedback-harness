@@ -16,6 +16,7 @@ export function normalizeCaseClosureRow(row: Record<string, unknown>): FeedbackI
 export function normalizeUniversalRow(row: Record<string, unknown>): FeedbackItem {
   const elementContext = row.element_context ?? undefined;
   const feedbackType = row.feedback_type === 'product' || row.feedback_type === 'ai' ? row.feedback_type : undefined;
+  const screenshotStoragePath = optionalString(row.screenshot_storage_path);
   return {
     id: stringValue(row.feedback_id),
     source: elementContext == null ? 'general' : 'targeted',
@@ -27,6 +28,7 @@ export function normalizeUniversalRow(row: Record<string, unknown>): FeedbackIte
     feedbackType,
     text: optionalString(row.feedback_text) ?? '',
     elementContext,
+    screenshot: screenshotStoragePath == null ? undefined : { storagePath: screenshotStoragePath },
   };
 }
 

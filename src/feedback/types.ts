@@ -1,5 +1,9 @@
 export type FeedbackSource = 'case_closure' | 'general' | 'targeted';
 
+export type ScreenshotMetadata = {
+  storagePath: string;
+};
+
 export type FeedbackItem = {
   id: string;
   source: FeedbackSource;
@@ -13,4 +17,5 @@ export type FeedbackItem = {
   text: string;
   suggestedOutput?: unknown;
   elementContext?: unknown;
+  screenshot?: ScreenshotMetadata;
 };

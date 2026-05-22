@@ -53,6 +53,7 @@ ${JSON.stringify(items, null, 2)}`;
 function compactItem(item: FeedbackItem): FeedbackItem {
   return {
     ...item,
+    screenshot: undefined,
     text: truncate(item.text, 1200),
     suggestedOutput: item.suggestedOutput == null ? undefined : safeTruncateJson(item.suggestedOutput, 1200),
     elementContext: item.elementContext == null ? undefined : safeTruncateJson(item.elementContext, 1200),

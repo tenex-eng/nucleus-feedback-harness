@@ -14,6 +14,13 @@ describe('normalizeUniversalRow', () => {
     expect(normalizeUniversalRow({ feedback_id: 'f2', feedback_text: 'hello', feedback_type: 'product', element_context: null, created_at: '2026-01-01' })).toMatchObject({ id: 'f2', source: 'general', feedbackType: 'product', text: 'hello' });
   });
 
+  it('preserves screenshot metadata', () => {
+    expect(normalizeUniversalRow({ feedback_id: 'f4', feedback_text: 'hello', screenshot_storage_path: 'universal-feedback/t/f4/screenshot.jpg', created_at: '2026-01-01' })).toMatchObject({
+      id: 'f4',
+      screenshot: { storagePath: 'universal-feedback/t/f4/screenshot.jpg' },
+    });
+  });
+
   it('maps present element context to targeted', () => {
     expect(normalizeUniversalRow({ feedback_id: 'f3', feedback_text: 'wrong', feedback_type: 'ai', element_context: { node: 'button' }, created_at: '2026-01-01' })).toMatchObject({ id: 'f3', source: 'targeted', feedbackType: 'ai', text: 'wrong' });
   });

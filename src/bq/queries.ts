@@ -40,7 +40,7 @@ async function queryUniversal(client: BigQuery, options: QueryOptions): Promise<
   const limitClause = options.limit ? 'LIMIT @limit' : '';
   const [rows] = await client.query({
     query: `
-      SELECT feedback_id, tenant_id, user_id, feedback_text, feedback_type, page_url, case_id, element_context, browser_info, created_at
+      SELECT feedback_id, tenant_id, user_id, feedback_text, feedback_type, page_url, case_id, screenshot_storage_path, element_context, browser_info, created_at
       FROM \`${options.dataset}.public_universal_feedbacks\`
       WHERE created_at BETWEEN @start AND @end
       ORDER BY created_at DESC

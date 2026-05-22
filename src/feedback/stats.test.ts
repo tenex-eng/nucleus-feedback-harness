@@ -8,8 +8,8 @@ describe('computeFeedbackStats', () => {
   it('computes coverage and source counts', () => {
     const items: FeedbackItem[] = [
       { ...base, id: 'c1', source: 'case_closure', text: 'closed' },
-      { ...base, id: 'g1', source: 'general', text: '   ' },
-      { ...base, id: 't1', source: 'targeted', text: 'bug' },
+      { ...base, id: 'g1', source: 'general', text: '   ', screenshot: { storagePath: 'g1.jpg' } },
+      { ...base, id: 't1', source: 'targeted', text: 'bug', screenshot: { storagePath: 't1.jpg' } },
       { ...base, id: 't2', source: 'targeted', text: '' },
     ];
 
@@ -18,6 +18,10 @@ describe('computeFeedbackStats', () => {
       nonEmpty: 2,
       empty: 2,
       sourceCounts: { caseClosure: 1, general: 1, targeted: 2 },
+      screenshotCoverage: {
+        withScreenshot: { caseClosure: 0, general: 1, targeted: 1 },
+        withoutScreenshot: { caseClosure: 1, general: 0, targeted: 1 },
+      },
     });
   });
 });

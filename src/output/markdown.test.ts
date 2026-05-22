@@ -21,7 +21,16 @@ const digest = {
 
 describe('renderMarkdown', () => {
   it('renders Research Findings and computed stats', () => {
-    const md = renderMarkdown(digest, { total: 3, nonEmpty: 2, empty: 1, sourceCounts: { caseClosure: 1, general: 1, targeted: 1 } });
+    const md = renderMarkdown(digest, {
+      total: 3,
+      nonEmpty: 2,
+      empty: 1,
+      sourceCounts: { caseClosure: 1, general: 1, targeted: 1 },
+      screenshotCoverage: {
+        withScreenshot: { caseClosure: 0, general: 1, targeted: 1 },
+        withoutScreenshot: { caseClosure: 1, general: 0, targeted: 0 },
+      },
+    });
     expect(md).toContain('## Research Findings');
     expect(md).toContain('### Case review is unclear');
     expect(md).toContain('**Affected workflow:** Case closure review');
