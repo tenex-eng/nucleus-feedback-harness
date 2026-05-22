@@ -2,13 +2,10 @@ import { Command } from 'commander';
 import { loadConfig } from './config.js';
 import { createBigQueryClient } from './bq/client.js';
 import { fetchFeedback } from './bq/queries.js';
-import { summarizeFeedback } from './agent/summarize.js';
 import { computeFeedbackStats } from './feedback/stats.js';
 import { createJsonLlmProvider, parseProvider } from './llm/factory.js';
-import { renderMarkdown } from './output/markdown.js';
-import { buildDigestArtifact } from './output/artifact.js';
-import { writeJson } from './output/json.js';
-import { writeDigest } from './output/write.js';
+import { createFileArtifactStore } from './output/store.js';
+import { runFeedbackDigest, type FeedbackSignalSource } from './run/feedback-digest.js';
 
 const program = new Command();
 
@@ -27,11 +24,13 @@ program
     const config = loadConfig();
     const { start, end } = parsePeriod(opts);
     const client = createBigQueryClient(config);
-    const items = await fetchFeedback(client, { dataset: config.bqDataset, start, end, limit: opts.limit });
-
-    const stats = computeFeedbackStats(items);
+    const signalSource: FeedbackSignalSource = {
+      fetch: async ({ period, limit }) => fetchFeedback(client, { dataset: config.bqDataset, start: period.start, end: period.end, limit }),
+    };
 
     if (opts.dryRun) {
+      const items = await signalSource.fetch({ period: { start, end }, limit: opts.limit });
+      const stats = computeFeedbackStats(items);
       console.log(JSON.stringify({ period: { start, end }, ...stats }, null, 2));
       return;
     }
@@ -39,12 +38,18 @@ program
     const providerName = parseProvider(opts.provider) ?? config.llmProvider;
     const model = opts.model ?? (providerName === 'openai' ? config.openaiModel : config.vertexModel);
     const provider = createJsonLlmProvider(config, { provider: providerName, model });
-    const { digest, chunkCoverage, completion } = await summarizeFeedback(provider, { start, end, items });
-    const artifact = buildDigestArtifact({ digest, stats, provider: providerName, model, items, chunkCoverage, completion });
-    if (opts.saveJson) await writeJson(opts.saveJson, artifact);
-    const markdown = renderMarkdown(digest, stats, completion);
-    const path = await writeDigest(markdown, { outputDir: config.outputDir, out: opts.out, end });
-    console.log(`Wrote ${path}`);
+    const result = await runFeedbackDigest({
+      period: { start, end },
+      signalSource,
+      llmProvider: provider,
+      provider: providerName,
+      model,
+      limit: opts.limit,
+      markdownPath: opts.out,
+      jsonPath: opts.saveJson,
+      artifactStore: createFileArtifactStore(config.outputDir),
+    });
+    console.log(`Wrote ${result.writtenPaths?.markdownPath}`);
   });
 
 program.parseAsync().catch((error) => {

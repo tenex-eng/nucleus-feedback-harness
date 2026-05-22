@@ -24,6 +24,10 @@ _Avoid_: element feedback, targeted form
 A weekly report that packages product-improvement findings from Feedback Signals.
 _Avoid_: summary, report
 
+**Feedback Digest Run**:
+One execution of the Feedback Harness that collects Feedback Signals for a period, synthesizes a Feedback Digest, builds a Digest Artifact, and optionally writes it to an Artifact Store.
+_Avoid_: job, pipeline run, service call
+
 **Digest Corpus**:
 The accumulated collection of Feedback Digests used for longitudinal analysis.
 _Avoid_: archive, repository, history
