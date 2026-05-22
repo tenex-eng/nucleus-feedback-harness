@@ -52,6 +52,19 @@ describe('synthesizeFeedbackDigest', () => {
     expect(result.digest.executiveSummary).toBe('summary retry');
   });
 
+  it('explains all-failed synthesis distinctly from no findings', async () => {
+    const provider: JsonLlmProvider = {
+      async generateJson() {
+        throw new Error('quota exceeded');
+      },
+    };
+
+    const result = await synthesizeFeedbackDigest(provider, { period, items: [item('1'), item('2')], chunkSize: 1 });
+
+    expect(result.completion).toMatchObject({ status: 'incomplete', unsynthesizedSignalCount: 2 });
+    expect(result.digest.executiveSummary).toBe('No Research Findings were produced because synthesis failed for every non-empty Feedback Signal.');
+  });
+
   it('marks permanent chunk failures incomplete without dropping metadata', async () => {
     const provider: JsonLlmProvider = {
       async generateJson(input) {

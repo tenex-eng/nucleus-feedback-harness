@@ -71,6 +71,17 @@ describe('mergeChunkDigests', () => {
     expect(merged.researchFindings[0].representativeQuotes[1].quote.length).toBe(280);
   });
 
+  it('explains when all chunks failed before producing findings', () => {
+    const merged = mergeChunkDigests({
+      start: new Date('2026-01-01T00:00:00.000Z'),
+      end: new Date('2026-01-08T00:00:00.000Z'),
+      digests: [],
+      allChunksFailed: true,
+    });
+
+    expect(merged.executiveSummary).toBe('No Research Findings were produced because synthesis failed for every non-empty Feedback Signal.');
+  });
+
   it('keeps distinct findings separate', () => {
     const merged = mergeChunkDigests({
       start: new Date('2026-01-01T00:00:00.000Z'),

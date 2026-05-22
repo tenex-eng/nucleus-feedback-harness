@@ -42,7 +42,12 @@ export async function synthesizeFeedbackDigest(provider: JsonLlmProvider, input:
   const { digests, failedChunks } = await digestChunks(provider, input.period, chunks);
   const digest = digests.length === 1
     ? digests[0]
-    : mergeChunkDigests({ start: input.period.start, end: input.period.end, digests });
+    : mergeChunkDigests({
+      start: input.period.start,
+      end: input.period.end,
+      digests,
+      allChunksFailed: digests.length === 0 && failedChunks.length > 0,
+    });
   return { digest, chunkCoverage, completion: completionFromFailedChunks(failedChunks) };
 }
 

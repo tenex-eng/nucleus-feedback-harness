@@ -18,7 +18,7 @@ export function loadConfig(): AppConfig {
   return {
     googleCloudProject: required('GOOGLE_CLOUD_PROJECT'),
     bqDataset: process.env.BQ_DATASET ?? 'core',
-    llmProvider: parseProvider(process.env.LLM_PROVIDER ?? 'openai'),
+    llmProvider: parseProvider(process.env.LLM_PROVIDER ?? 'vertex'),
     openaiApiKey: process.env.OPENAI_API_KEY,
     openaiModel: process.env.OPENAI_MODEL ?? 'gpt-4.1-mini',
     vertexProject: process.env.VERTEX_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? 'nucleus-analytics',
