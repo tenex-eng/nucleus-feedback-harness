@@ -1,8 +1,7 @@
 import type { DigestCompletion } from '../agent/summarize.js';
 import { summarizeFeedback } from '../agent/summarize.js';
 import type { DigestArtifact } from '../output/artifact.js';
-import { buildDigestArtifact } from '../output/artifact.js';
-import { renderMarkdown } from '../output/markdown.js';
+import { createDigestArtifactView } from '../output/artifact.js';
 import { computeFeedbackStats } from '../feedback/stats.js';
 import type { FeedbackItem } from '../feedback/types.js';
 import type { JsonLlmProvider, LlmProviderName } from '../llm/types.js';
@@ -44,7 +43,7 @@ export async function runFeedbackDigest(input: RunFeedbackDigestInput): Promise<
     end: input.period.end,
     items,
   });
-  const artifact = buildDigestArtifact({
+  const { artifact, markdown } = createDigestArtifactView({
     digest,
     stats,
     provider: input.provider,
@@ -53,7 +52,6 @@ export async function runFeedbackDigest(input: RunFeedbackDigestInput): Promise<
     chunkCoverage,
     completion,
   });
-  const markdown = renderMarkdown(digest, stats, completion);
   const writtenPaths = input.artifactStore == null ? undefined : await input.artifactStore.write({
     artifact,
     markdown,

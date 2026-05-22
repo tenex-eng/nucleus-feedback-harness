@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDigestArtifact, DIGEST_ARTIFACT_SCHEMA_VERSION } from './artifact.js';
+import { buildDigestArtifact, createDigestArtifactView, DIGEST_ARTIFACT_SCHEMA_VERSION } from './artifact.js';
 
 const digest = {
   period: { start: '2026-05-01T00:00:00.000Z', end: '2026-05-08T00:00:00.000Z' },
@@ -70,6 +70,24 @@ describe('buildDigestArtifact', () => {
       model: 'gpt-4.1-mini',
       chunkCoverage,
     }).chunkCoverage).toEqual(chunkCoverage);
+  });
+
+  it('creates JSON and Markdown from the same completion semantics', () => {
+    const view = createDigestArtifactView({
+      digest,
+      stats,
+      provider: 'openai',
+      model: 'gpt-4.1-mini',
+      completion: {
+        status: 'incomplete',
+        unsynthesizedSignalCount: 2,
+        failedChunks: [{ index: 1, itemCount: 2, itemIds: ['x', 'y'], error: 'provider down' }],
+      },
+    });
+
+    expect(view.artifact.completion.status).toBe('incomplete');
+    expect(view.markdown).toContain('⚠️ **Incomplete digest:**');
+    expect(view.markdown).toContain('**Unsynthesized non-empty signals:** 2');
   });
 
   it('preserves incomplete completion metadata', () => {
