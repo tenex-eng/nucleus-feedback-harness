@@ -1,5 +1,5 @@
-import type { DigestCompletion } from '../agent/summarize.js';
-import { summarizeFeedback } from '../agent/summarize.js';
+import type { DigestCompletion } from '../agent/synthesis.js';
+import { synthesizeFeedbackDigest } from '../agent/synthesis.js';
 import type { DigestArtifact } from '../output/artifact.js';
 import { createDigestArtifactView } from '../output/artifact.js';
 import { computeFeedbackStats } from '../feedback/stats.js';
@@ -38,9 +38,8 @@ export type RunFeedbackDigestResult = {
 export async function runFeedbackDigest(input: RunFeedbackDigestInput): Promise<RunFeedbackDigestResult> {
   const items = await input.signalSource.fetch({ period: input.period, limit: input.limit });
   const stats = computeFeedbackStats(items);
-  const { digest, chunkCoverage, completion } = await summarizeFeedback(input.llmProvider, {
-    start: input.period.start,
-    end: input.period.end,
+  const { digest, chunkCoverage, completion } = await synthesizeFeedbackDigest(input.llmProvider, {
+    period: input.period,
     items,
   });
   const { artifact, markdown } = createDigestArtifactView({
