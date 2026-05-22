@@ -1,5 +1,6 @@
 import { partitionNonEmptyFeedback, type ChunkCoverage, buildChunkCoverage, type FeedbackChunk } from '../feedback/chunks.js';
 import type { FeedbackItem } from '../feedback/types.js';
+import { generateValidatedJson } from '../llm/json.js';
 import type { JsonLlmProvider } from '../llm/types.js';
 import { mergeChunkDigests } from './merge.js';
 import { buildDigestPrompt } from './prompt.js';
@@ -65,15 +66,11 @@ async function digestChunks(provider: JsonLlmProvider, period: { start: Date; en
 
 async function digestChunk(provider: JsonLlmProvider, period: { start: Date; end: Date }, chunk: FeedbackChunk, chunkCount: number): Promise<Digest> {
   const prompt = buildDigestPrompt({ start: period.start, end: period.end, items: chunk.items, chunkIndex: chunk.index, chunkCount });
-  return callAndParse(provider, prompt, false).catch(() => callAndParse(provider, prompt, true));
+  return generateValidatedJson(provider, { prompt, parse: (value) => DigestSchema.parse(value) });
 }
 
 function completionFromFailedChunks(failedChunks: FailedChunk[]): DigestCompletion {
   return failedChunks.length === 0
     ? { status: 'complete' }
     : { status: 'incomplete', unsynthesizedSignalCount: failedChunks.reduce((total, chunk) => total + chunk.itemCount, 0), failedChunks };
-}
-
-async function callAndParse(provider: JsonLlmProvider, prompt: string, retry: boolean): Promise<Digest> {
-  return DigestSchema.parse(await provider.generateJson({ prompt, retry }));
 }
