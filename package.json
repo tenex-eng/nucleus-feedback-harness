@@ -1,1 +1,27 @@
-{"name":"nucleus-feedback-harness","version":"0.1.0","private":true,"type":"module","scripts":{"digest":"tsx src/index.ts","build":"tsc --noEmit","typecheck":"tsc --noEmit","test":"vitest run"},"dependencies":{"@google-cloud/bigquery":"latest","commander":"latest","dotenv":"latest","google-auth-library":"^10.6.2","openai":"latest","zod":"latest"},"devDependencies":{"@types/node":"latest","tsx":"latest","typescript":"latest","vitest":"^4.1.7"},"packageManager":"pnpm@10.0.0"}
+{
+  "name": "nucleus-feedback-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "digest": "tsx src/index.ts",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@google-cloud/bigquery": "latest",
+    "commander": "latest",
+    "dotenv": "latest",
+    "google-auth-library": "^10.6.2",
+    "openai": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "^4.1.7"
+  },
+  "packageManager": "pnpm@10.0.0"
+}
