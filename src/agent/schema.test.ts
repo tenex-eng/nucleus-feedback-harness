@@ -25,12 +25,14 @@ describe('DigestSchema', () => {
   });
 
   it('caps representative quote length', () => {
-    expect(() => DigestSchema.parse({
+    const parsed = DigestSchema.parse({
       ...validDigest,
       researchFindings: [{
         ...validDigest.researchFindings[0],
         representativeQuotes: [{ id: 'a', quote: 'x'.repeat(281) }],
       }],
-    })).toThrow();
+    });
+
+    expect(parsed.researchFindings[0].representativeQuotes[0].quote).toHaveLength(280);
   });
 });

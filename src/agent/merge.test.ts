@@ -91,4 +91,26 @@ describe('mergeChunkDigests', () => {
 
     expect(merged.researchFindings.map((item) => item.title)).toEqual(['Closure rationale is unclear', 'Search filters fail']);
   });
+
+  it('builds one final executive summary from merged findings instead of concatenating chunk summaries', () => {
+    const merged = mergeChunkDigests({
+      start: new Date('2026-01-01T00:00:00.000Z'),
+      end: new Date('2026-01-08T00:00:00.000Z'),
+      digests: [digest({ executiveSummary: 'first chunk summary' }), digest({ executiveSummary: 'second chunk summary', researchFindings: [finding({ title: 'Search filters fail', affectedWorkflow: 'Search', painOrNeed: 'Users need reliable filtering.', evidenceIds: ['s1'] })] })],
+    });
+
+    expect(merged.executiveSummary).toContain('The strongest patterns are');
+    expect(merged.executiveSummary).not.toContain('first chunk summary');
+    expect(merged.executiveSummary).not.toContain('second chunk summary');
+  });
+
+  it('caps the final digest to seven strongest Research Findings by default', () => {
+    const merged = mergeChunkDigests({
+      start: new Date('2026-01-01T00:00:00.000Z'),
+      end: new Date('2026-01-08T00:00:00.000Z'),
+      digests: [digest({ researchFindings: Array.from({ length: 9 }, (_, index) => finding({ title: `Finding ${index}`, affectedWorkflow: `Workflow ${index}`, painOrNeed: `Need ${index} requires specific remediation.`, evidenceIds: [`e${index}`] })) })],
+    });
+
+    expect(merged.researchFindings).toHaveLength(7);
+  });
 });

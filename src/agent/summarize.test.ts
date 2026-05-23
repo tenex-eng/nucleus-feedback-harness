@@ -39,7 +39,7 @@ describe('summarizeFeedback', () => {
     expect(prompts[1]).toContain('"id": "2"');
     expect(prompts[2]).toContain('"id": "3"');
     expect(prompts.join('\n')).not.toContain('"id": "4"');
-    expect(result.digest.executiveSummary).toBe('summary 1\n\nsummary 2\n\nsummary 3');
+    expect(result.digest.executiveSummary).toBe('No Research Findings were produced from the synthesized Feedback Signals.');
     expect(result.completion).toEqual({ status: 'complete' });
   });
 

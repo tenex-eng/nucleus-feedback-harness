@@ -55,4 +55,35 @@ describe('mergeResearchFindings', () => {
     expect(merged[0].representativeQuotes).toHaveLength(3);
     expect(merged[0].representativeQuotes[1].quote.length).toBe(280);
   });
+
+  it('merges semantically similar Research Findings with overlapping evidence', () => {
+    const merged = mergeResearchFindings([
+      finding({ title: 'False positives create tuning burden', affectedWorkflow: 'Detection tuning', painOrNeed: 'Analysts need fewer noisy detections before triage.', evidenceIds: ['a1', 'a2'] }),
+      finding({ title: 'Noisy false-positive detections slow analysts', affectedWorkflow: 'Detection tuning', painOrNeed: 'Analysts need lower noise while tuning detections.', evidenceIds: ['a2', 'a3'] }),
+    ]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].evidenceIds).toEqual(['a1', 'a2', 'a3']);
+  });
+
+  it('merges recurring false-positive and AI-disposition categories without shared evidence', () => {
+    const merged = mergeResearchFindings([
+      finding({ title: 'High Volume of False Positives Requires Extensive Manual Tuning', affectedWorkflow: 'Alert triage', painOrNeed: 'Analysts need less noise.', evidenceIds: ['a1'] }),
+      finding({ title: 'False positives and inaccurate alert classification', affectedWorkflow: 'Alert tuning', painOrNeed: 'Analysts need better alert tuning.', evidenceIds: ['a2'] }),
+      finding({ title: 'Inaccurate AI-generated dispositions require manual verification', affectedWorkflow: 'Case disposition', painOrNeed: 'Analysts need trustworthy summaries.', evidenceIds: ['b1'] }),
+      finding({ title: 'Misleading disposition summaries slow review', affectedWorkflow: 'T1 disposition', painOrNeed: 'Analysts need accurate AI dispositions.', evidenceIds: ['b2'] }),
+    ]);
+
+    expect(merged.map((item) => item.evidenceIds)).toEqual([['a1', 'a2'], ['b1', 'b2']]);
+  });
+
+  it('limits merged Research Findings to the strongest set', () => {
+    const merged = mergeResearchFindings([
+      finding({ title: 'Low A', affectedWorkflow: 'Workflow L', painOrNeed: 'Low need.', severity: 'low', evidenceIds: ['l1'] }),
+      finding({ title: 'High A', affectedWorkflow: 'Workflow H', painOrNeed: 'High need.', severity: 'high', evidenceIds: ['h1'] }),
+      finding({ title: 'Medium A', affectedWorkflow: 'Workflow M', painOrNeed: 'Medium need.', severity: 'medium', evidenceIds: ['m1'] }),
+    ], { maxFindings: 2 });
+
+    expect(merged.map((item) => item.title)).toEqual(['High A', 'Medium A']);
+  });
 });

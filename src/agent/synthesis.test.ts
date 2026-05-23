@@ -31,7 +31,7 @@ describe('synthesizeFeedbackDigest', () => {
     expect(result.chunkCoverage.chunks.flatMap((chunk) => chunk.itemIds)).toEqual(['1', '2', '3']);
     expect(prompts).toHaveLength(3);
     expect(prompts.join('\n')).not.toContain('"id": "4"');
-    expect(result.digest.executiveSummary).toBe('summary 1\n\nsummary 2\n\nsummary 3');
+    expect(result.digest.executiveSummary).toBe('No Research Findings were produced from the synthesized Feedback Signals.');
     expect(result.completion).toEqual({ status: 'complete' });
   });
 

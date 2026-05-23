@@ -17,7 +17,7 @@ export const ResearchFindingSchema = z.object({
   evidenceIds: z.array(z.string()),
   representativeQuotes: z.array(z.object({
     id: z.string(),
-    quote: z.string().max(280),
+    quote: z.string().transform((quote) => quote.length <= 280 ? quote : `${quote.slice(0, 279)}…`),
   })),
   recommendedNextStep: z.string(),
   openQuestions: z.array(z.string()),
