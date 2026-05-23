@@ -12,13 +12,15 @@ export function buildDigestPrompt(input: { start: Date; end: Date; items: Feedba
 Rules:
 - Use only provided feedback.
 - Produce 3-6 evidence-backed Research Findings, not generic themes.
-- Each finding must name affected workflow and user pain/need.
+- Prefer 5-7 final-worthy findings over exhaustive coverage.
+- Each finding must name one affected workflow and user pain/need.
+- Do not bundle unrelated product surfaces (for example Inspector and Intelligence Hub) into one finding unless the same evidence IDs connect them.
 - Severity = impact/urgency: "low" | "medium" | "high".
 - Confidence = evidence strength: "low" | "medium" | "high".
-- Source diversity counts supporting evidence by source.
+- Source diversity counts supporting evidence by source; the harness will verify these counts from evidence IDs.
 - Evidence IDs must be representative IDs from input, max 5 per finding.
 - Representative quotes must be direct quotes, max 280 chars each, max 3 per finding.
-- Recommended next step must be concrete.
+- Recommended next step must be concrete: include action verb, owner surface/workflow, and specific UI/data object to change or inspect.
 - Include open questions when confidence is low/medium or evidence is ambiguous.
 - Empty-text rows were excluded from Feedback JSON. Do not infer satisfaction, intent, or sentiment from empty text.
 

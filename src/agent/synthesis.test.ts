@@ -35,6 +35,32 @@ describe('synthesizeFeedbackDigest', () => {
     expect(result.completion).toEqual({ status: 'complete' });
   });
 
+  it('repairs Source Diversity from Feedback Signal sources', async () => {
+    const provider: JsonLlmProvider = {
+      async generateJson() {
+        return {
+          ...digest('source'),
+          researchFindings: [{
+            title: 'Finding',
+            affectedWorkflow: 'Workflow',
+            painOrNeed: 'Need.',
+            severity: 'medium',
+            confidence: 'medium',
+            sourceDiversity: { caseClosure: 99, general: 99, targeted: 99 },
+            evidenceIds: ['1', '2'],
+            representativeQuotes: [],
+            recommendedNextStep: 'Inspect workflow object.',
+            openQuestions: [],
+          }],
+        };
+      },
+    };
+
+    const result = await synthesizeFeedbackDigest(provider, { period, items: [item('1'), { ...item('2'), source: 'targeted' }], chunkSize: 10 });
+
+    expect(result.digest.researchFindings[0].sourceDiversity).toEqual({ caseClosure: 0, general: 1, targeted: 1 });
+  });
+
   it('retries transient chunk failures', async () => {
     const calls: boolean[] = [];
     const provider: JsonLlmProvider = {

@@ -1,3 +1,4 @@
+import type { FeedbackItem } from '../feedback/types.js';
 import type { ResearchFinding } from './schema.js';
 
 const rank = { low: 0, medium: 1, high: 2 } as const;
@@ -17,6 +18,30 @@ export function mergeResearchFindings(findings: ResearchFinding[], options: { ma
 
 export function researchFindingIdentity(finding: ResearchFinding): string {
   return `${normalize(finding.title)}|${normalize(finding.affectedWorkflow)}|${normalize(finding.painOrNeed)}`;
+}
+
+export function repairResearchFindingSourceDiversity(findings: ResearchFinding[], items: FeedbackItem[]): ResearchFinding[] {
+  const evidenceItems = new Map(items.map((item) => [item.id, item]));
+  return findings.map((finding) => {
+    const evidenceIds = unique(finding.evidenceIds.map((evidenceId) => canonicalEvidenceId(evidenceId, items)).filter((id) => evidenceItems.has(id)));
+    return {
+      ...finding,
+      evidenceIds,
+      sourceDiversity: evidenceIds.reduce<ResearchFinding['sourceDiversity']>((counts, evidenceId) => {
+        const source = evidenceItems.get(evidenceId)?.source;
+        if (source === 'case_closure') counts.caseClosure += 1;
+        if (source === 'general') counts.general += 1;
+        if (source === 'targeted') counts.targeted += 1;
+        return counts;
+      }, { caseClosure: 0, general: 0, targeted: 0 }),
+    };
+  });
+}
+
+function canonicalEvidenceId(evidenceId: string, items: FeedbackItem[]): string {
+  if (items.some((item) => item.id === evidenceId)) return evidenceId;
+  const prefixMatches = items.filter((item) => item.id.startsWith(evidenceId));
+  return prefixMatches.length === 1 ? prefixMatches[0].id : evidenceId;
 }
 
 function mergeRelatedResearchFindings(a: ResearchFinding, b: ResearchFinding): ResearchFinding {
@@ -61,10 +86,12 @@ function areRelatedResearchFindings(a: ResearchFinding, b: ResearchFinding): boo
 }
 
 function researchFindingCategory(finding: ResearchFinding): string | undefined {
-  const text = findingText(finding).toLowerCase();
+  const text = `${findingText(finding)} ${finding.recommendedNextStep}`.toLowerCase();
   if (text.includes('false positive') || (text.includes('tuning') && text.includes('alert'))) return 'false-positive-tuning';
-  if ((text.includes('ai') || text.includes('disposition') || text.includes('summary')) && (text.includes('inaccur') || text.includes('inconsistent') || text.includes('misleading') || text.includes('manual verification'))) return 'ai-disposition-quality';
+  if (text.includes('misclassification') || text.includes('misclassifies') || (text.includes('benign') && text.includes('malicious'))) return 'ai-disposition-quality';
+  if ((text.includes('ai') || text.includes('disposition') || text.includes('summary') || text.includes('classification')) && (text.includes('inaccur') || text.includes('inconsistent') || text.includes('misleading') || text.includes('manual verification') || text.includes('incorrect'))) return 'ai-disposition-quality';
   if (text.includes('intelligence hub') || (text.includes('case') && text.includes('correlation') && text.includes('history'))) return 'intelligence-hub-context';
+  if (text.includes('investigate tab') && (text.includes('query') || text.includes('rate limit') || text.includes('too many requests'))) return 'investigate-query-limits';
 }
 
 function hasSharedDistinctiveToken(a: ResearchFinding, b: ResearchFinding): boolean {

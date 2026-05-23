@@ -3,6 +3,7 @@ import type { FeedbackItem } from '../feedback/types.js';
 import { generateValidatedJson } from '../llm/json.js';
 import type { JsonLlmProvider } from '../llm/types.js';
 import { mergeChunkDigests } from './merge.js';
+import { repairResearchFindingSourceDiversity } from './research-findings.js';
 import { buildDigestPrompt } from './prompt.js';
 import { DigestSchema, type Digest } from './schema.js';
 
@@ -48,7 +49,7 @@ export async function synthesizeFeedbackDigest(provider: JsonLlmProvider, input:
       digests,
       allChunksFailed: digests.length === 0 && failedChunks.length > 0,
     });
-  return { digest, chunkCoverage, completion: completionFromFailedChunks(failedChunks) };
+  return { digest: repairDigestSourceDiversity(digest, input.items), chunkCoverage, completion: completionFromFailedChunks(failedChunks) };
 }
 
 async function digestChunks(provider: JsonLlmProvider, period: { start: Date; end: Date }, chunks: FeedbackChunk[]): Promise<{ digests: Digest[]; failedChunks: FailedChunk[] }> {
@@ -72,6 +73,10 @@ async function digestChunks(provider: JsonLlmProvider, period: { start: Date; en
 async function digestChunk(provider: JsonLlmProvider, period: { start: Date; end: Date }, chunk: FeedbackChunk, chunkCount: number): Promise<Digest> {
   const prompt = buildDigestPrompt({ start: period.start, end: period.end, items: chunk.items, chunkIndex: chunk.index, chunkCount });
   return generateValidatedJson(provider, { prompt, parse: (value) => DigestSchema.parse(value) });
+}
+
+function repairDigestSourceDiversity(digest: Digest, items: FeedbackItem[]): Digest {
+  return { ...digest, researchFindings: repairResearchFindingSourceDiversity(digest.researchFindings, items) };
 }
 
 function completionFromFailedChunks(failedChunks: FailedChunk[]): DigestCompletion {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeResearchFindings, researchFindingIdentity } from './research-findings.js';
+import { mergeResearchFindings, repairResearchFindingSourceDiversity, researchFindingIdentity } from './research-findings.js';
 import type { ResearchFinding } from './schema.js';
 
 const finding = (overrides: Partial<ResearchFinding> = {}): ResearchFinding => ({
@@ -75,6 +75,29 @@ describe('mergeResearchFindings', () => {
     ]);
 
     expect(merged.map((item) => item.evidenceIds)).toEqual([['a1', 'a2'], ['b1', 'b2']]);
+  });
+
+  it('merges duplicate Investigate tab query-limit findings', () => {
+    const merged = mergeResearchFindings([
+      finding({ title: 'Investigate Tab Query Limitations Impede Thorough Analysis', affectedWorkflow: 'Investigate tab', painOrNeed: 'Analysts need robust querying without too many requests errors.', evidenceIds: ['q1'] }),
+      finding({ title: 'Investigate Tab Query Limits Impede Deep Dive Analysis', affectedWorkflow: 'Investigate tab queries', painOrNeed: 'Analysts need query rate limits that support investigations.', evidenceIds: ['q2'] }),
+    ]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].evidenceIds).toEqual(['q1', 'q2']);
+  });
+
+  it('computes Source Diversity from canonical evidence IDs instead of model-provided counts', () => {
+    const repaired = repairResearchFindingSourceDiversity([
+      finding({ sourceDiversity: { caseClosure: 99, general: 99, targeted: 99 }, evidenceIds: ['case-id-1', 'general-', 'targeted-id-1', 'missing'] }),
+    ], [
+      { id: 'case-id-1', source: 'case_closure', createdAt: '2026-01-01T00:00:00.000Z', text: 'case' },
+      { id: 'general-id-1', source: 'general', createdAt: '2026-01-01T00:00:00.000Z', text: 'general' },
+      { id: 'targeted-id-1', source: 'targeted', createdAt: '2026-01-01T00:00:00.000Z', text: 'targeted' },
+    ]);
+
+    expect(repaired[0].evidenceIds).toEqual(['case-id-1', 'general-id-1', 'targeted-id-1']);
+    expect(repaired[0].sourceDiversity).toEqual({ caseClosure: 1, general: 1, targeted: 1 });
   });
 
   it('limits merged Research Findings to the strongest set', () => {
