@@ -2,7 +2,7 @@ import { partitionNonEmptyFeedback, type ChunkCoverage, buildChunkCoverage, type
 import type { FeedbackItem } from '../feedback/types.js';
 import { generateValidatedJson } from '../llm/json.js';
 import type { JsonLlmProvider } from '../llm/types.js';
-import { mergeChunkDigests } from './merge.js';
+import { buildActionExecutiveSummary, mergeChunkDigests } from './merge.js';
 import { repairResearchFindingSourceDiversity } from './research-findings.js';
 import { buildDigestPrompt } from './prompt.js';
 import { DigestSchema, type Digest } from './schema.js';
@@ -49,7 +49,7 @@ export async function synthesizeFeedbackDigest(provider: JsonLlmProvider, input:
       digests,
       allChunksFailed: digests.length === 0 && failedChunks.length > 0,
     });
-  return { digest: repairDigestSourceDiversity(digest, input.items), chunkCoverage, completion: completionFromFailedChunks(failedChunks) };
+  return { digest: repairDigestSourceDiversity(digest, input.items, digests.length === 0 && failedChunks.length > 0), chunkCoverage, completion: completionFromFailedChunks(failedChunks) };
 }
 
 async function digestChunks(provider: JsonLlmProvider, period: { start: Date; end: Date }, chunks: FeedbackChunk[]): Promise<{ digests: Digest[]; failedChunks: FailedChunk[] }> {
@@ -75,8 +75,9 @@ async function digestChunk(provider: JsonLlmProvider, period: { start: Date; end
   return generateValidatedJson(provider, { prompt, parse: (value) => DigestSchema.parse(value) });
 }
 
-function repairDigestSourceDiversity(digest: Digest, items: FeedbackItem[]): Digest {
-  return { ...digest, researchFindings: repairResearchFindingSourceDiversity(digest.researchFindings, items) };
+function repairDigestSourceDiversity(digest: Digest, items: FeedbackItem[], allChunksFailed = false): Digest {
+  const researchFindings = repairResearchFindingSourceDiversity(digest.researchFindings, items);
+  return { ...digest, researchFindings, executiveSummary: buildActionExecutiveSummary(researchFindings, allChunksFailed) };
 }
 
 function completionFromFailedChunks(failedChunks: FailedChunk[]): DigestCompletion {

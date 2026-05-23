@@ -8,7 +8,7 @@ export function mergeChunkDigests(input: { start: Date; end: Date; digests: Dige
   return {
     period: { start: input.start.toISOString(), end: input.end.toISOString() },
     totals: sumTotals(input.digests),
-    executiveSummary: buildExecutiveSummary(researchFindings, input.allChunksFailed ?? false),
+    executiveSummary: buildActionExecutiveSummary(researchFindings, input.allChunksFailed ?? false),
     researchFindings,
   };
 }
@@ -21,20 +21,18 @@ function sumTotals(digests: Digest[]): Digest['totals'] {
   }), { caseClosure: 0, general: 0, targeted: 0 });
 }
 
-function buildExecutiveSummary(findings: Digest['researchFindings'], allChunksFailed: boolean): string {
+export function buildActionExecutiveSummary(findings: Digest['researchFindings'], allChunksFailed = false): string {
   if (allChunksFailed) return 'No Research Findings were produced because synthesis failed for every non-empty Feedback Signal.';
   if (findings.length === 0) return 'No Research Findings were produced from the synthesized Feedback Signals.';
 
-  const topFindings = findings.slice(0, 3).map((finding) => `${finding.title} (${finding.affectedWorkflow})`);
-  const evidenceCount = new Set(findings.flatMap((finding) => finding.evidenceIds)).size;
-  const highSeverityCount = findings.filter((finding) => finding.severity === 'high').length;
-  const severityLine = highSeverityCount === 0 ? 'No high-severity Research Findings were identified.' : `${highSeverityCount} high-severity Research Finding${highSeverityCount === 1 ? '' : 's'} need attention.`;
-  const patternLabel = topFindings.length === 1 ? 'pattern is' : 'patterns are';
-  return `${severityLine} The strongest ${patternLabel} ${formatList(topFindings)}. These findings are backed by ${evidenceCount} Feedback Signal${evidenceCount === 1 ? '' : 's'} and should guide the next product-improvement pass.`;
+  const actions = findings.slice(0, 3).map((finding, index) => `${index + 1}. **${finding.title}.** ${finding.recommendedNextStep} _Why now:_ ${finding.evidenceIds.length} supporting Feedback Signal${finding.evidenceIds.length === 1 ? '' : 's'} (${formatSourceDiversity(finding.sourceDiversity)}), ${finding.severity} severity.`);
+  return `${actions.join('\n\n')}\n\n**Caveats**\n\n- Screenshots/images are not synthesized yet; image-only context may be missing because screenshot handling needs a safer path for customer-identifying or sensitive information.\n- Positive signals still use the Research Finding schema, so severity can overstate “what’s working” until we add a separate section.`;
 }
 
-function formatList(items: string[]): string {
-  if (items.length === 1) return items[0];
-  if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+function formatSourceDiversity(sourceDiversity: Digest['researchFindings'][number]['sourceDiversity']): string {
+  const parts = [];
+  if (sourceDiversity.caseClosure > 0) parts.push(`${sourceDiversity.caseClosure} case closure`);
+  if (sourceDiversity.general > 0) parts.push(`${sourceDiversity.general} general`);
+  if (sourceDiversity.targeted > 0) parts.push(`${sourceDiversity.targeted} targeted`);
+  return parts.join(', ') || 'no source-matched evidence';
 }

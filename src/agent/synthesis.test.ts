@@ -75,7 +75,7 @@ describe('synthesizeFeedbackDigest', () => {
 
     expect(calls).toEqual([false, true]);
     expect(result.completion).toEqual({ status: 'complete' });
-    expect(result.digest.executiveSummary).toBe('summary retry');
+    expect(result.digest.executiveSummary).toBe('No Research Findings were produced from the synthesized Feedback Signals.');
   });
 
   it('explains all-failed synthesis distinctly from no findings', async () => {
@@ -106,6 +106,6 @@ describe('synthesizeFeedbackDigest', () => {
       unsynthesizedSignalCount: 1,
       failedChunks: [{ index: 1, itemCount: 1, itemIds: ['2'] }],
     });
-    expect(result.digest.executiveSummary).toBe('summary ok');
+    expect(result.digest.executiveSummary).toBe('No Research Findings were produced from the synthesized Feedback Signals.');
   });
 });

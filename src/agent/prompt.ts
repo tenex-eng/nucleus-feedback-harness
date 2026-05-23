@@ -22,6 +22,8 @@ Rules:
 - Representative quotes must be direct quotes, max 280 chars each, max 3 per finding.
 - Recommended next step must be concrete: include action verb, owner surface/workflow, and specific UI/data object to change or inspect.
 - Include open questions when confidence is low/medium or evidence is ambiguous.
+- Executive summary must be action-oriented, not a generic topic summary: list the top 3 recommended actions, include why now with evidence count/source mix/severity, then include caveats if coverage is limited.
+- Do not include a "What's working" section in executive summary until positive findings have a separate schema.
 - Empty-text rows were excluded from Feedback JSON. Do not infer satisfaction, intent, or sentiment from empty text.
 
 JSON shape:

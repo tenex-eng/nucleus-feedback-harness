@@ -99,7 +99,8 @@ describe('mergeChunkDigests', () => {
       digests: [digest({ executiveSummary: 'first chunk summary' }), digest({ executiveSummary: 'second chunk summary', researchFindings: [finding({ title: 'Search filters fail', affectedWorkflow: 'Search', painOrNeed: 'Users need reliable filtering.', evidenceIds: ['s1'] })] })],
     });
 
-    expect(merged.executiveSummary).toContain('The strongest patterns are');
+    expect(merged.executiveSummary).toContain('1. **Closure rationale is unclear.** Review closure rationale examples. _Why now:_');
+    expect(merged.executiveSummary).toContain('**Caveats**');
     expect(merged.executiveSummary).not.toContain('first chunk summary');
     expect(merged.executiveSummary).not.toContain('second chunk summary');
   });
