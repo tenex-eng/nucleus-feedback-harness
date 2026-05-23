@@ -103,16 +103,30 @@ export function renderDigestArtifactMarkdown(artifact: DigestArtifact): string {
   for (const finding of digest.researchFindings) {
     lines.push(`### ${finding.title}`);
     lines.push('');
-    lines.push(`- **Affected workflow:** ${finding.affectedWorkflow}`);
-    lines.push(`- **Pain / need:** ${finding.painOrNeed}`);
-    lines.push(`- **Severity:** ${finding.severity}`);
-    lines.push(`- **Confidence:** ${finding.confidence}`);
-    lines.push(`- **Source diversity:** case closure ${finding.sourceDiversity.caseClosure}, general ${finding.sourceDiversity.general}, targeted ${finding.sourceDiversity.targeted}`);
-    lines.push(`- **Evidence:** ${finding.evidenceIds.join(', ') || 'none'}`);
-    lines.push(`- **Recommended next step:** ${finding.recommendedNextStep}`);
-    if (finding.openQuestions.length > 0) lines.push(`- **Open questions:** ${finding.openQuestions.join('; ')}`);
+    lines.push(`**Severity:** ${finding.severity} · **Confidence:** ${finding.confidence}  `);
+    lines.push(`**Workflow:** ${finding.affectedWorkflow}  `);
+    lines.push(`**Source diversity:** case closure ${finding.sourceDiversity.caseClosure}, general ${finding.sourceDiversity.general}, targeted ${finding.sourceDiversity.targeted}`);
     lines.push('');
-    lines.push('Representative quotes:');
+    lines.push('**Pain / need**');
+    lines.push('');
+    lines.push(finding.painOrNeed);
+    lines.push('');
+    lines.push('**Recommended next step**');
+    lines.push('');
+    lines.push(finding.recommendedNextStep);
+    lines.push('');
+    if (finding.openQuestions.length > 0) {
+      lines.push('**Open questions**');
+      lines.push('');
+      for (const question of finding.openQuestions) lines.push(`- ${question}`);
+      lines.push('');
+    }
+    lines.push(`**Evidence IDs (${finding.evidenceIds.length})**`);
+    lines.push('');
+    lines.push(finding.evidenceIds.length === 0 ? '_None._' : finding.evidenceIds.map((id) => `\`${id}\``).join(', '));
+    lines.push('');
+    lines.push('**Representative quotes**');
+    lines.push('');
     if (finding.representativeQuotes.length === 0) lines.push('- _None._');
     for (const quote of finding.representativeQuotes) {
       lines.push(`- **${quote.id}:** “${truncate(quote.quote, MAX_MARKDOWN_QUOTE_LENGTH)}”`);

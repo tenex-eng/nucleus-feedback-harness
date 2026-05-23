@@ -33,9 +33,12 @@ describe('renderMarkdown', () => {
     });
     expect(md).toContain('## Research Findings');
     expect(md).toContain('### Case review is unclear');
-    expect(md).toContain('**Affected workflow:** Case closure review');
-    expect(md).toContain('**Pain / need:** Users need clearer rationale before accepting closure.');
+    expect(md).toContain('**Workflow:** Case closure review');
+    expect(md).toContain('**Pain / need**\n\nUsers need clearer rationale before accepting closure.');
     expect(md).toContain('**Source diversity:** case closure 1, general 0, targeted 1');
+    expect(md).toContain('**Recommended next step**\n\nAudit closure rationale examples.');
+    expect(md).toContain('**Open questions**\n\n- Does this happen for all tenants?');
+    expect(md).toContain('**Evidence IDs (2)**\n\n`a`, `b`');
     expect(md).toContain('**a:** “The closure reason was vague.”');
     expect(md).toContain('**Input rows:** 3; non-empty text: 2; empty text: 1');
   });
