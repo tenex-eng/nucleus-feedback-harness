@@ -100,7 +100,7 @@ export function renderDigestArtifactMarkdown(artifact: DigestArtifact): string {
   lines.push('## Research Findings');
   lines.push('');
   if (digest.researchFindings.length === 0) lines.push('_No research findings._');
-  for (const finding of digest.researchFindings) {
+  for (const [findingIndex, finding] of digest.researchFindings.entries()) {
     lines.push(`### ${finding.title}`);
     lines.push('');
     lines.push(`**Severity:** ${finding.severity} · **Confidence:** ${finding.confidence}  `);
@@ -121,9 +121,7 @@ export function renderDigestArtifactMarkdown(artifact: DigestArtifact): string {
       for (const question of finding.openQuestions) lines.push(`- ${question}`);
       lines.push('');
     }
-    lines.push(`**Evidence IDs (${finding.evidenceIds.length})**`);
-    lines.push('');
-    lines.push(finding.evidenceIds.length === 0 ? '_None._' : finding.evidenceIds.map((id) => `\`${id}\``).join(', '));
+    lines.push(`**Evidence:** [${finding.evidenceIds.length} ID${finding.evidenceIds.length === 1 ? '' : 's'}](#evidence-ids-${findingIndex + 1})`);
     lines.push('');
     lines.push('**Representative quotes**');
     lines.push('');
@@ -133,7 +131,27 @@ export function renderDigestArtifactMarkdown(artifact: DigestArtifact): string {
     }
     lines.push('');
   }
+  if (digest.researchFindings.length > 0) {
+    lines.push('## Evidence IDs');
+    lines.push('');
+    for (const [findingIndex, finding] of digest.researchFindings.entries()) {
+      lines.push(`### Evidence IDs ${findingIndex + 1}: ${finding.title}`);
+      lines.push('');
+      lines.push(`[Back to finding](#${markdownAnchor(finding.title)})`);
+      lines.push('');
+      lines.push(finding.evidenceIds.length === 0 ? '_None._' : finding.evidenceIds.map((id) => `\`${id}\``).join(', '));
+      lines.push('');
+    }
+  }
   return lines.join('\n');
+}
+
+function markdownAnchor(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
 }
 
 function buildScreenshotReferences(items: FeedbackItem[]): ScreenshotReference[] {

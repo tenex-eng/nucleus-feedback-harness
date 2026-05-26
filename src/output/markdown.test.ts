@@ -38,8 +38,12 @@ describe('renderMarkdown', () => {
     expect(md).toContain('**Source diversity:** case closure 1, general 0, targeted 1');
     expect(md).toContain('**Recommended next step**\n\nAudit closure rationale examples.');
     expect(md).toContain('**Open questions**\n\n- Does this happen for all tenants?');
-    expect(md).toContain('**Evidence IDs (2)**\n\n`a`, `b`');
+    expect(md).toContain('**Evidence:** [2 IDs](#evidence-ids-1)');
     expect(md).toContain('**a:** “The closure reason was vague.”');
+    expect(md).toContain('## Evidence IDs');
+    expect(md).toContain('### Evidence IDs 1: Case review is unclear');
+    expect(md).toContain('[Back to finding](#case-review-is-unclear)');
+    expect(md).toContain('`a`, `b`');
     expect(md).toContain('**Input rows:** 3; non-empty text: 2; empty text: 1');
   });
 
